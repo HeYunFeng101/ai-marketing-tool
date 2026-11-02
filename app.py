@@ -18,7 +18,7 @@ def get_base64_of_bin_file(bin_file):
 
 # 读取背景图和 LOGO
 bin_str = get_base64_of_bin_file('bg.jpg')
-logo_str = get_base64_of_bin_file('LOGO.png')
+logo_str = get_base64_of_bin_file('logo.png')
 
 # ==================== Q弹玻璃胶囊 UI 注入 ====================
 st.markdown(f"""
