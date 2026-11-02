@@ -198,7 +198,6 @@ if not st.session_state["logged_in"]:
     st.markdown(f"""
     <div style="text-align: center; margin-top: 50px;">
         <div class="bubble-title" style="font-size: 2.8rem; gap: 20px;">
-            <!-- 调大了 LOGO 尺寸，去掉了圆角 -->
             <img src="data:image/png;base64,{logo_str}" width="110"> 
             <span>AI 营销与传播全链路助手</span>
         </div>
@@ -210,7 +209,8 @@ if not st.session_state["logged_in"]:
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         with st.container(border=True):
-            st.markdown("### 📱 手机号快捷登录 / 注册")
+            # 删除了手机表情
+            st.markdown("### 手机号快捷登录 / 注册")
             phone = st.text_input("请输入您的手机号", placeholder="请输入 11 位手机号", max_chars=11)
 
             col_code1, col_code2 = st.columns([2, 1])
@@ -260,13 +260,12 @@ else:
                 st.session_state["logged_in"] = False
                 st.rerun()
 
-        st.info("💡 提示：我们提供从脚本策划、合规审查到后期剪辑的完整 AI 辅助工作流。")
+        st.info("提示：我们提供从脚本策划、合规审查到后期剪辑的完整 AI 辅助工作流。")
 
     # 主界面
     st.markdown(f"""
     <div style="margin-bottom: 20px;">
         <div class="bubble-title" style="font-size: 2.2rem; gap: 15px;">
-            <!-- 调大了 LOGO 尺寸 -->
             <img src="data:image/png;base64,{logo_str}" width="80"> 
             <span>AI 营销与传播全链路助手</span>
         </div>
@@ -275,7 +274,8 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    tab1, tab2, tab3 = st.tabs(["🛡️ 直播违规词审查", "😊 店铺口碑评估机", "🎬 短视频分镜与剪辑"])
+    # 去掉 Tab 上的 Emoji
+    tab1, tab2, tab3 = st.tabs(["直播违规词审查", "店铺口碑评估机", "短视频分镜与剪辑"])
 
     # ==================== 选项卡 1：违规审查 ====================
     with tab1:
@@ -286,6 +286,7 @@ else:
 
             col_btn1, col_btn2 = st.columns([3, 1])
             with col_btn2:
+                # 去掉按钮上的火箭
                 if st.button("开启合规审查", type="primary", use_container_width=True, key="btn_tab1"):
                     if not user_input_1.strip():
                         st.warning("请先输入文案哦！")
@@ -312,6 +313,7 @@ else:
 
             col_btn1, col_btn2 = st.columns([3, 1])
             with col_btn2:
+                # 去掉按钮上的放大镜
                 if st.button("评估店铺口碑", type="primary", use_container_width=True, key="btn_tab2"):
                     if not user_input_2.strip():
                         st.warning("请输入店铺信息哦！")
@@ -343,7 +345,7 @@ else:
 
     # ==================== 选项卡 3：短视频分镜与剪辑 ====================
     with tab3:
-        with st.expander("⚙️ 展开/收起 创作参数设置", expanded=True):
+        with st.expander("展开/收起 创作参数设置", expanded=True):
             col_p1, col_p2, col_p3 = st.columns(3)
             with col_p1: platform = st.selectbox("目标平台", ["抖音", "小红书", "视频号", "B站"])
             with col_p2: audience = st.selectbox("目标受众",
@@ -357,6 +359,7 @@ else:
 
             col_btn3, col_btn4 = st.columns([3, 1])
             with col_btn4:
+                # 去掉按钮上的打板
                 if st.button("一键生成爆款分镜", type="primary", use_container_width=True, key="btn_tab3"):
                     if not user_input_3.strip():
                         st.warning("请先输入你的主题哦！")
@@ -371,7 +374,7 @@ else:
                                     temperature=0.7
                                 )
                                 result_text = response.choices[0].message.content
-                                st.success("🎬 导演，您的分镜脚本已生成！")
+                                st.success("导演，您的分镜脚本已生成！")
                                 st.markdown(result_text)
                                 st.session_state['last_script'] = result_text
                                 st.code(result_text, language="markdown")
@@ -380,7 +383,8 @@ else:
 
         st.markdown("---")
         with st.container(border=True):
-            st.markdown("### ✂️ 拍完不会剪？一键获取剪映保姆级教程")
+            # 删除了剪刀表情
+            st.markdown("### 拍完不会剪？一键获取剪映保姆级教程")
             if st.button("生成剪映实操教程", key="btn_jianying"):
                 script_content = st.session_state.get('last_script', user_input_3)
                 if not script_content:
@@ -392,7 +396,7 @@ else:
                             edit_response = client.chat.completions.create(model="deepseek-flash", messages=[
                                 {"role": "system", "content": edit_prompt}, {"role": "user", "content": "请给我教程。"}],
                                                                            temperature=0.5)
-                            st.success("✂️ 专属剪映教程已生成！")
+                            st.success("专属剪映教程已生成！")
                             col1, col2 = st.columns(2)
                             with col1:
                                 st.image("https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400",
@@ -406,7 +410,8 @@ else:
 
         st.markdown("---")
         with st.container(border=True):
-            st.markdown("### 📹 视频剪辑成果检测与 AI 诊断")
+            # 删除了摄像机表情
+            st.markdown("### 视频剪辑成果检测与 AI 诊断")
             uploaded_video = st.file_uploader("请上传你的剪辑视频 (支持 mp4/mov/avi)", type=["mp4", "mov", "avi"])
             if uploaded_video is not None:
                 st.video(uploaded_video)
@@ -418,7 +423,7 @@ else:
                             review_response = client.chat.completions.create(model="deepseek-flash", messages=[
                                 {"role": "system", "content": review_prompt}, {"role": "user", "content": "请给建议。"}],
                                                                              temperature=0.6)
-                            st.success("🩺 诊断报告已生成！")
+                            st.success("诊断报告已生成！")
                             st.markdown(review_response.choices[0].message.content)
                         except Exception as e:
                             st.error(f"诊断失败：{e}")
