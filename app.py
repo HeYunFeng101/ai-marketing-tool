@@ -3,6 +3,7 @@ from openai import OpenAI
 import time
 import re
 import base64
+import os
 
 # 1. 网页基础设置
 st.set_page_config(page_title="和云风 AI营销传播助手", page_icon="✨", layout="wide")
@@ -19,7 +20,6 @@ def get_base64_of_bin_file(bin_file):
         return ""
 
 
-# 读取背景图和 LOGO
 bin_str = get_base64_of_bin_file('bg.webp')
 logo_str = get_base64_of_bin_file('logo.png')
 
@@ -29,9 +29,9 @@ st.markdown(f"""
 /* 隐藏默认菜单和页脚 */
 #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
 
-/* 背景图 */
+/* 背景图加深遮罩 */
 [data-testid="stAppViewContainer"] {{
-    background-image: linear-gradient(rgba(10, 12, 20, 0.2), rgba(10, 12, 20, 0.4)), url("data:image/webp;base64,{bin_str}") !important;
+    background-image: linear-gradient(rgba(5, 7, 12, 0.65), rgba(5, 7, 12, 0.85)), url("data:image/webp;base64,{bin_str}") !important;
     background-size: cover !important;
     background-position: center !important;
     background-attachment: fixed !important;
@@ -49,7 +49,7 @@ st.markdown(f"""
     color: #f8fafc !important;
 }}
 
-/* 标题气泡：大圆角 */
+/* 标题气泡 */
 .bubble-title {{
     display: inline-flex;
     align-items: center;
@@ -64,11 +64,7 @@ st.markdown(f"""
     margin-bottom: 20px;
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }}
-.bubble-title:hover {{
-    transform: scale(1.05, 0.95); 
-    background: rgba(255, 255, 255, 0.12);
-}}
-
+.bubble-title:hover {{ transform: scale(1.05, 0.95); background: rgba(255, 255, 255, 0.12); }}
 .bubble-subtitle {{
     display: inline-block;
     background: rgba(255, 255, 255, 0.06);
@@ -93,7 +89,7 @@ st.markdown(f"""
     margin-bottom: 15px !important;
 }}
 
-/* 输入框 Label 胶囊 */
+/* 输入框 Label */
 [data-testid="stWidgetLabel"] p {{
     display: inline-block;
     background: rgba(255, 255, 255, 0.05);
@@ -123,7 +119,7 @@ st.markdown(f"""
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), inset 0 2px 5px rgba(0,0,0,0.1) !important;
 }}
 
-/* 按钮：极致挤压感 */
+/* 按钮挤压感 */
 .stButton > button {{
     background: rgba(255, 255, 255, 0.08) !important;
     backdrop-filter: blur(12px) !important;
@@ -155,10 +151,7 @@ st.markdown(f"""
     font-weight: 500 !important;
     box-shadow: inset 0 1px 1px rgba(255,255,255,0.3) !important;
 }}
-.stTabs [data-baseweb="tab"]:hover {{ 
-    transform: scale(1.05, 0.95) !important;
-    background-color: rgba(255, 255, 255, 0.1) !important; 
-}}
+.stTabs [data-baseweb="tab"]:hover {{ transform: scale(1.05, 0.95) !important; background-color: rgba(255, 255, 255, 0.1) !important; }}
 .stTabs [aria-selected="true"] {{
     background: rgba(255, 255, 255, 0.15) !important; 
     color: white !important;
@@ -176,11 +169,43 @@ st.markdown(f"""
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }}
 [data-testid="stVerticalBlockBorderWrapper"]:hover {{
-    transform: scale(1.02, 0.98) !important;
+    transform: scale(1.01, 0.99) !important;
     border-color: rgba(255, 255, 255, 0.3) !important;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255,255,255,0.5) !important;
     background: rgba(255, 255, 255, 0.08) !important;
 }}
+
+/* 🌟 新增：Markdown 表格的玻璃气泡化 */
+table {{
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    transition: all 0.4s ease !important;
+}}
+table:hover {{
+    background: rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.3) !important;
+    transform: scale(1.005) !important;
+}}
+th {{
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+    padding: 15px 10px !important;
+    font-weight: bold !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}}
+td {{
+    padding: 15px 10px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: #e2e8f0 !important;
+    line-height: 1.6 !important;
+}}
+tr:last-child td {{ border-bottom: none !important; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -188,7 +213,7 @@ st.markdown(f"""
 API_KEY = st.secrets["DEEPSEEK_API_KEY"]
 client = OpenAI(api_key=API_KEY, base_url="https://api.deepseek.com")
 
-# 4. 初始化登录状态
+# 4. 初始化状态
 if "logged_in" not in st.session_state: st.session_state["logged_in"] = False
 if "user_phone" not in st.session_state: st.session_state["user_phone"] = ""
 
@@ -238,16 +263,14 @@ if not st.session_state["logged_in"]:
                         st.session_state["user_phone"] = phone[:3] + "****" + phone[-4:]
                         st.rerun()
 
-        # 登录界面下方的技术指导
         st.markdown("""
         <div style="text-align: center; margin-top: 30px; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
             <p>技术指导：和云风 | 联系邮箱：1620339694@qq.com</p>
         </div>
         """, unsafe_allow_html=True)
 
-# ==================== 登录成功后的主系统 ====================
+# ==================== 主系统 ====================
 else:
-    # 侧边栏
     with st.sidebar:
         st.markdown(f"""
         <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 24px; text-align: center; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(10px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 8px 32px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.4);" onmouseover="this.style.transform='scale(1.03, 0.97)'" onmouseout="this.style.transform='scale(1)'">
@@ -267,11 +290,10 @@ else:
 
         st.info("提示：我们提供从脚本策划、合规审查到后期剪辑的完整 AI 辅助工作流。")
 
-    # ==================== 主界面 ====================
+    # 主界面标题
     st.markdown(f"""
     <div style="text-align: center; margin-bottom: 40px; margin-top: 10px;">
         <div class="bubble-title" style="font-size: 3.3rem; gap: 20px; padding: 15px 45px;">
-            <!-- 加了圆角和白色背景底，即使不抠图也会像个精致的徽章 -->
             <img src="data:image/png;base64,{logo_str}" width="120" style="border-radius: 50%; background-color: rgba(255,255,255,0.9); padding: 5px;"> 
             <span>和云风 AI营销传播助手</span>
         </div>
@@ -348,111 +370,111 @@ else:
 
     # ==================== 选项卡 3 ====================
     with tab3:
-        with st.expander("展开/收起 创作参数设置", expanded=True):
-            col_p1, col_p2, col_p3 = st.columns(3)
-            with col_p1: platform = st.selectbox("目标平台", ["抖音", "小红书", "视频号", "B站"])
-            with col_p2: audience = st.selectbox("目标受众",
-                                                 ["年轻女性", "宝妈群体", "大学生", "职场新人", "中老年群体"])
-            with col_p3: style = st.radio("视频风格", ["真诚分享", "搞笑剧情", "干货科普", "情感共鸣"], horizontal=True)
-
-        # 直达目标平台
-        platform_urls = {
-            "抖音": "https://www.douyin.com/",
-            "小红书": "https://www.xiaohongshu.com/",
-            "视频号": "https://channels.weixin.qq.com/",
-            "B站": "https://www.bilibili.com/"
-        }
-        target_url = platform_urls.get(platform, "#")
-
-        st.markdown(f"""
-        <div style="text-align: center; margin-bottom: 20px;">
-            <a href="{target_url}" target="_blank" style="
-                display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
-                background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);
-                padding: 15px 35px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3);
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255,255,255,0.5);
-                color: white; font-weight: 600; font-size: 1.1rem; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            " onmouseover="this.style.transform='scale(1.08, 0.92)'; this.style.background='rgba(255, 255, 255, 0.15)'; this.style.boxShadow='0 12px 25px rgba(0, 0, 0, 0.2), inset 0 2px 5px rgba(255,255,255,0.8)'" 
-               onmouseout="this.style.transform='scale(1)'; this.style.background='rgba(255, 255, 255, 0.08)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255,255,255,0.5)'">
-                🚀 获取灵感后，点击直接前往 {platform} 发布作品
-            </a>
-        </div>
-        """, unsafe_allow_html=True)
-
+        # 1. 参数和输入区（独立出来）
         with st.container(border=True):
-            st.markdown("### 输入主题，一键生成分镜脚本")
+            st.markdown("### 创作参数设置")
+            col_p1, col_p2, col_p3 = st.columns(3)
+            with col_p1:
+                platform = st.selectbox("目标平台", ["抖音", "小红书", "视频号", "B站"])
+            with col_p2:
+                audience = st.selectbox("目标受众", ["年轻女性", "宝妈群体", "大学生", "职场新人", "中老年群体"])
+            with col_p3:
+                style = st.radio("视频风格", ["真诚分享", "搞笑剧情", "干货科普", "情感共鸣"], horizontal=True)
+
+            st.markdown("---")
             user_input_3 = st.text_area("请输入你的产品、门店或想表达的主题：", height=100,
                                         placeholder="例如：烟台红富士苹果，脆甜多汁，产地直发。", key="input_tab3")
 
-            col_btn3, col_btn4 = st.columns([3, 1])
-            with col_btn4:
-                if st.button("一键生成爆款分镜", type="primary", use_container_width=True, key="btn_tab3"):
-                    if not user_input_3.strip():
-                        st.warning("请先输入你的主题哦！")
-                    else:
-                        with st.spinner("AI 导演正在构思分镜和爆款文案..."):
-                            system_prompt = f"你是一个拥有千万粉丝的短视频爆款操盘手。请生成分镜脚本。目标平台【{platform}】，受众【{audience}】，风格【{style}】。严格使用 Markdown 表格输出五列：| 镜号 | 时间(秒) | 画面景别与动作 | 口播文案 | 音效/BGM建议 |。表格后给出运营建议。"
-                            try:
-                                response = client.chat.completions.create(
-                                    model="deepseek-flash",
-                                    messages=[{"role": "system", "content": system_prompt},
-                                              {"role": "user", "content": f"我的主题是：{user_input_3}"}],
-                                    temperature=0.7
-                                )
-                                result_text = response.choices[0].message.content
-                                st.success("导演，您的分镜脚本已生成！")
-                                st.markdown(result_text)
-                                st.session_state['last_script'] = result_text
-                                st.code(result_text, language="markdown")
-                            except Exception as e:
-                                st.error(f"发生错误：{e}")
-
-        st.markdown("---")
-        with st.container(border=True):
-            st.markdown("### 拍完不会剪？一键获取剪映保姆级教程")
-            if st.button("生成剪映实操教程", key="btn_jianying"):
-                script_content = st.session_state.get('last_script', user_input_3)
-                if not script_content:
-                    st.warning("请先生成分镜脚本！")
+            if st.button("一键生成爆款分镜", type="primary", use_container_width=True, key="btn_tab3"):
+                if not user_input_3.strip():
+                    st.warning("请先输入你的主题哦！")
                 else:
-                    with st.spinner("AI 导师正在为你定制剪映操作流程..."):
-                        edit_prompt = f"你是一个耐心的剪辑导师。请根据脚本【{script_content}】，写一份详细的“剪映”App实操教程。要求细化到点哪个按钮，如：点击底部【文本】->【识别字幕】。用【图1】占位。"
+                    with st.spinner("AI 导演正在构思分镜和爆款文案..."):
+                        system_prompt = f"你是一个拥有千万粉丝的短视频爆款操盘手。请生成分镜脚本。目标平台【{platform}】，受众【{audience}】，风格【{style}】。严格使用 Markdown 表格输出五列：| 镜号 | 时间(秒) | 画面景别与动作 | 口播文案 | 音效/BGM建议 |。表格后给出运营建议。"
                         try:
-                            edit_response = client.chat.completions.create(model="deepseek-flash", messages=[
-                                {"role": "system", "content": edit_prompt}, {"role": "user", "content": "请给我教程。"}],
-                                                                           temperature=0.5)
-                            st.success("专属剪映教程已生成！")
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.image("https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400",
-                                         caption="图1：剪映界面示例")
-                            with col2:
-                                st.image("https://images.unsplash.com/photo-1626544827763-d516dce335e2?w=400",
-                                         caption="图2：添加字幕示例")
-                            st.markdown(edit_response.choices[0].message.content)
+                            response = client.chat.completions.create(
+                                model="deepseek-flash",
+                                messages=[{"role": "system", "content": system_prompt},
+                                          {"role": "user", "content": f"我的主题是：{user_input_3}"}],
+                                temperature=0.7
+                            )
+                            st.session_state['last_script'] = response.choices[0].message.content
                         except Exception as e:
-                            st.error(f"教程生成失败：{e}")
+                            st.error(f"发生错误：{e}")
 
+        # 2. 结果展示区（占满全宽，拥有玻璃质感）
+        if 'last_script' in st.session_state and st.session_state['last_script']:
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # 直达目标平台的小按钮
+            platform_urls = {"抖音": "https://www.douyin.com/", "小红书": "https://www.xiaohongshu.com/",
+                             "视频号": "https://channels.weixin.qq.com/", "B站": "https://www.bilibili.com/"}
+            target_url = platform_urls.get(platform, "#")
+            st.markdown(f"""
+            <div style="text-align: center; margin-bottom: 20px;">
+                <a href="{target_url}" target="_blank" style="
+                    display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+                    background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);
+                    padding: 12px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255,255,255,0.5);
+                    color: white; font-weight: 600; font-size: 1rem; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                " onmouseover="this.style.transform='scale(1.08, 0.92)'; this.style.background='rgba(255, 255, 255, 0.15)';" 
+                   onmouseout="this.style.transform='scale(1)'; this.style.background='rgba(255, 255, 255, 0.08)';">
+                    🚀 获取灵感后，点击直接前往 {platform} 发布作品
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # 用一个全宽 Container 包裹表格
+            with st.container(border=True):
+                st.markdown(st.session_state['last_script'])
+
+                # 这里原本的 st.code 会导致重复显示，用折叠框收起来
+                with st.expander("点击查看原始 Markdown 源码 (供复制)"):
+                    st.code(st.session_state['last_script'], language="markdown")
+
+        # 剪映教程与视频诊断
         st.markdown("---")
-        with st.container(border=True):
-            st.markdown("### 视频剪辑成果检测与 AI 诊断")
-            uploaded_video = st.file_uploader("请上传你的剪辑视频 (支持 mp4/mov/avi)", type=["mp4", "mov", "avi"])
-            if uploaded_video is not None:
-                st.video(uploaded_video)
-                user_desc = st.text_area("剪辑中遇到了什么问题？", placeholder="例如：不知道怎么加转场，字幕出太慢。")
-                if st.button("获取 AI 专家修改建议", type="primary", key="btn_review"):
-                    with st.spinner("AI 专家正在分析你的剪辑痛点..."):
-                        review_prompt = f"你是短视频编导。脚本是【{st.session_state.get('last_script', '')}】。用户的难点是【{user_desc}】。请给出诊断和剪映实操建议。"
-                        try:
-                            review_response = client.chat.completions.create(model="deepseek-flash", messages=[
-                                {"role": "system", "content": review_prompt}, {"role": "user", "content": "请给建议。"}],
-                                                                             temperature=0.6)
-                            st.success("诊断报告已生成！")
-                            st.markdown(review_response.choices[0].message.content)
-                        except Exception as e:
-                            st.error(f"诊断失败：{e}")
+        col_j1, col_j2 = st.columns(2)
+        with col_j1:
+            with st.container(border=True):
+                st.markdown("### ✂️ 一键获取剪映保姆级教程")
+                if st.button("生成剪映实操教程", key="btn_jianying", use_container_width=True):
+                    script_content = st.session_state.get('last_script', user_input_3)
+                    if not script_content:
+                        st.warning("请先生成分镜脚本！")
+                    else:
+                        with st.spinner("AI 导师正在为你定制剪映操作流程..."):
+                            edit_prompt = f"你是一个耐心的剪辑导师。请根据脚本【{script_content}】，写一份详细的“剪映”App实操教程。要求细化到点哪个按钮，如：点击底部【文本】->【识别字幕】。"
+                            try:
+                                edit_response = client.chat.completions.create(model="deepseek-flash", messages=[
+                                    {"role": "system", "content": edit_prompt},
+                                    {"role": "user", "content": "请给我教程。"}], temperature=0.5)
+                                st.success("专属剪映教程已生成！")
+                                st.markdown(edit_response.choices[0].message.content)
+                            except Exception as e:
+                                st.error(f"教程生成失败：{e}")
 
-    # ==================== 页面最底部技术指导 ====================
+        with col_j2:
+            with st.container(border=True):
+                st.markdown("### 📹 视频剪辑成果诊断")
+                uploaded_video = st.file_uploader("请上传你的剪辑视频 (支持 mp4/mov/avi)", type=["mp4", "mov", "avi"])
+                if uploaded_video is not None:
+                    st.video(uploaded_video)
+                    user_desc = st.text_area("剪辑中遇到了什么问题？", placeholder="例如：不知道怎么加转场，字幕出太慢。")
+                    if st.button("获取 AI 专家修改建议", type="primary", key="btn_review", use_container_width=True):
+                        with st.spinner("AI 专家正在分析你的剪辑痛点..."):
+                            review_prompt = f"你是短视频编导。脚本是【{st.session_state.get('last_script', '')}】。用户的难点是【{user_desc}】。请给出诊断和剪映实操建议。"
+                            try:
+                                review_response = client.chat.completions.create(model="deepseek-flash", messages=[
+                                    {"role": "system", "content": review_prompt},
+                                    {"role": "user", "content": "请给建议。"}], temperature=0.6)
+                                st.success("诊断报告已生成！")
+                                st.markdown(review_response.choices[0].message.content)
+                            except Exception as e:
+                                st.error(f"诊断失败：{e}")
+
+    # ==================== 底部技术指导 ====================
     st.markdown("""
     <div style="text-align: center; margin-top: 60px; padding-bottom: 30px; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
         <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 15px; width: 40%; margin-left: 30%;">
