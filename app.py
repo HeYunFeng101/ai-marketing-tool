@@ -5,7 +5,8 @@ import re
 import base64
 
 # 1. 网页基础设置
-st.set_page_config(page_title="AI 营销与传播助手", page_icon="✨", layout="wide")
+st.set_page_config(page_title="和云风 AI营销传播助手", page_icon="✨", layout="wide")
+
 
 # 2. 读取本地图片并转为 Base64
 def get_base64_of_bin_file(bin_file):
@@ -13,11 +14,13 @@ def get_base64_of_bin_file(bin_file):
         with open(bin_file, 'rb') as f:
             data = f.read()
         return base64.b64encode(data).decode()
-    except Exception:
+    except Exception as e:
+        print(f"图片读取失败: {bin_file}, 错误信息: {e}")
         return ""
 
+
 # 读取背景图和 LOGO
-bin_str = get_base64_of_bin_file('bg.jpg')
+bin_str = get_base64_of_bin_file('bg.webp')
 logo_str = get_base64_of_bin_file('logo.png')
 
 # ==================== Q弹玻璃胶囊 UI 注入 ====================
@@ -26,9 +29,9 @@ st.markdown(f"""
 /* 隐藏默认菜单和页脚 */
 #MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
 
-/* 核心改动：降低暗色遮罩，让原图更加透亮 */
+/* 背景图 */
 [data-testid="stAppViewContainer"] {{
-    background-image: linear-gradient(rgba(10, 12, 20, 0.2), rgba(10, 12, 20, 0.4)), url("data:image/jpeg;base64,{bin_str}") !important;
+    background-image: linear-gradient(rgba(10, 12, 20, 0.2), rgba(10, 12, 20, 0.4)), url("data:image/webp;base64,{bin_str}") !important;
     background-size: cover !important;
     background-position: center !important;
     background-attachment: fixed !important;
@@ -103,7 +106,7 @@ st.markdown(f"""
     margin-bottom: 5px;
 }}
 
-/* 输入框本体：玻璃胶囊化 */
+/* 输入框本体 */
 .stTextInput input, .stTextArea textarea {{
     border-radius: 16px !important; 
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -120,7 +123,7 @@ st.markdown(f"""
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), inset 0 2px 5px rgba(0,0,0,0.1) !important;
 }}
 
-/* ===== 按钮：极致挤压感的玻璃胶囊 ===== */
+/* 按钮：极致挤压感 */
 .stButton > button {{
     background: rgba(255, 255, 255, 0.08) !important;
     backdrop-filter: blur(12px) !important;
@@ -138,11 +141,8 @@ st.markdown(f"""
     border-color: rgba(255, 255, 255, 0.5) !important;
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2), inset 0 2px 5px rgba(255,255,255,0.8) !important;
 }}
-.stButton > button:active {{
-    transform: scale(0.95, 0.95) !important;
-}}
 
-/* Tabs 胶囊导航挤压感 */
+/* Tabs 胶囊导航 */
 .stTabs [data-baseweb="tab-list"] {{ gap: 15px; background-color: transparent; border-bottom: none; }}
 .stTabs [data-baseweb="tab"] {{
     border-radius: 50px !important; 
@@ -166,7 +166,7 @@ st.markdown(f"""
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255,255,255,0.6) !important;
 }}
 
-/* 容器卡片全面玻璃化 + 挤压动效 */
+/* 容器卡片 */
 [data-testid="stVerticalBlockBorderWrapper"] {{
     background: rgba(255, 255, 255, 0.05) !important;
     backdrop-filter: blur(20px) saturate(150%) !important;
@@ -174,7 +174,6 @@ st.markdown(f"""
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 2px rgba(255,255,255,0.3) !important;
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    transform-origin: center !important;
 }}
 [data-testid="stVerticalBlockBorderWrapper"]:hover {{
     transform: scale(1.02, 0.98) !important;
@@ -198,8 +197,8 @@ if not st.session_state["logged_in"]:
     st.markdown(f"""
     <div style="text-align: center; margin-top: 50px;">
         <div class="bubble-title" style="font-size: 2.8rem; gap: 20px;">
-            <img src="data:image/png;base64,{logo_str}" width="110"> 
-            <span>AI 营销与传播全链路助手</span>
+            <img src="data:image/png;base64,{logo_str}" width="110" style="border-radius: 50%; background-color: rgba(255,255,255,0.9); padding: 5px;"> 
+            <span>和云风 AI营销传播助手</span>
         </div>
         <br>
         <div class="bubble-subtitle">您的专属 AI 营销增长引擎</div>
@@ -209,7 +208,6 @@ if not st.session_state["logged_in"]:
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         with st.container(border=True):
-            # 删除了手机表情
             st.markdown("### 手机号快捷登录 / 注册")
             phone = st.text_input("请输入您的手机号", placeholder="请输入 11 位手机号", max_chars=11)
 
@@ -240,9 +238,16 @@ if not st.session_state["logged_in"]:
                         st.session_state["user_phone"] = phone[:3] + "****" + phone[-4:]
                         st.rerun()
 
+        # 登录界面下方的技术指导
+        st.markdown("""
+        <div style="text-align: center; margin-top: 30px; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+            <p>技术指导：和云风 | 联系邮箱：1620339694@qq.com</p>
+        </div>
+        """, unsafe_allow_html=True)
+
 # ==================== 登录成功后的主系统 ====================
 else:
-    # 侧边栏——精致的用户卡片
+    # 侧边栏
     with st.sidebar:
         st.markdown(f"""
         <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 24px; text-align: center; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(10px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 8px 32px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.4);" onmouseover="this.style.transform='scale(1.03, 0.97)'" onmouseout="this.style.transform='scale(1)'">
@@ -262,22 +267,22 @@ else:
 
         st.info("提示：我们提供从脚本策划、合规审查到后期剪辑的完整 AI 辅助工作流。")
 
-    # 主界面
+    # ==================== 主界面 ====================
     st.markdown(f"""
-    <div style="margin-bottom: 20px;">
-        <div class="bubble-title" style="font-size: 2.2rem; gap: 15px;">
-            <img src="data:image/png;base64,{logo_str}" width="80"> 
-            <span>AI 营销与传播全链路助手</span>
+    <div style="text-align: center; margin-bottom: 40px; margin-top: 10px;">
+        <div class="bubble-title" style="font-size: 3.3rem; gap: 20px; padding: 15px 45px;">
+            <!-- 加了圆角和白色背景底，即使不抠图也会像个精致的徽章 -->
+            <img src="data:image/png;base64,{logo_str}" width="120" style="border-radius: 50%; background-color: rgba(255,255,255,0.9); padding: 5px;"> 
+            <span>和云风 AI营销传播助手</span>
         </div>
         <br>
-        <div class="bubble-subtitle" style="font-size: 1rem;">基于 DeepSeek 大模型，一站式解决直播合规、口碑评估、短视频分镜与剪辑指导。</div>
+        <div class="bubble-subtitle" style="font-size: 1.2rem;">基于 DeepSeek 大模型，一站式解决直播合规、口碑评估、短视频分镜与剪辑指导。</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 去掉 Tab 上的 Emoji
     tab1, tab2, tab3 = st.tabs(["直播违规词审查", "店铺口碑评估机", "短视频分镜与剪辑"])
 
-    # ==================== 选项卡 1：违规审查 ====================
+    # ==================== 选项卡 1 ====================
     with tab1:
         with st.container(border=True):
             st.markdown("### 输入直播带货脚本，AI 自动排查风险")
@@ -286,7 +291,6 @@ else:
 
             col_btn1, col_btn2 = st.columns([3, 1])
             with col_btn2:
-                # 去掉按钮上的火箭
                 if st.button("开启合规审查", type="primary", use_container_width=True, key="btn_tab1"):
                     if not user_input_1.strip():
                         st.warning("请先输入文案哦！")
@@ -305,7 +309,7 @@ else:
                                 st.error(f"发生错误：{e}")
         st.info("示例输入：家人们，今天这款养生茶绝对是全网最低价！喝了包治百病，连医院都不用去了！")
 
-    # ==================== 选项卡 2：口碑评估 ====================
+    # ==================== 选项卡 2 ====================
     with tab2:
         with st.container(border=True):
             st.markdown("### 输入店铺信息，AI 生成情绪反馈")
@@ -313,7 +317,6 @@ else:
 
             col_btn1, col_btn2 = st.columns([3, 1])
             with col_btn2:
-                # 去掉按钮上的放大镜
                 if st.button("评估店铺口碑", type="primary", use_container_width=True, key="btn_tab2"):
                     if not user_input_2.strip():
                         st.warning("请输入店铺信息哦！")
@@ -343,7 +346,7 @@ else:
                             except Exception as e:
                                 st.error(f"发生错误：{e}")
 
-    # ==================== 选项卡 3：短视频分镜与剪辑 ====================
+    # ==================== 选项卡 3 ====================
     with tab3:
         with st.expander("展开/收起 创作参数设置", expanded=True):
             col_p1, col_p2, col_p3 = st.columns(3)
@@ -352,6 +355,30 @@ else:
                                                  ["年轻女性", "宝妈群体", "大学生", "职场新人", "中老年群体"])
             with col_p3: style = st.radio("视频风格", ["真诚分享", "搞笑剧情", "干货科普", "情感共鸣"], horizontal=True)
 
+        # 直达目标平台
+        platform_urls = {
+            "抖音": "https://www.douyin.com/",
+            "小红书": "https://www.xiaohongshu.com/",
+            "视频号": "https://channels.weixin.qq.com/",
+            "B站": "https://www.bilibili.com/"
+        }
+        target_url = platform_urls.get(platform, "#")
+
+        st.markdown(f"""
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="{target_url}" target="_blank" style="
+                display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+                background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);
+                padding: 15px 35px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255,255,255,0.5);
+                color: white; font-weight: 600; font-size: 1.1rem; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            " onmouseover="this.style.transform='scale(1.08, 0.92)'; this.style.background='rgba(255, 255, 255, 0.15)'; this.style.boxShadow='0 12px 25px rgba(0, 0, 0, 0.2), inset 0 2px 5px rgba(255,255,255,0.8)'" 
+               onmouseout="this.style.transform='scale(1)'; this.style.background='rgba(255, 255, 255, 0.08)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255,255,255,0.5)'">
+                🚀 获取灵感后，点击直接前往 {platform} 发布作品
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
+
         with st.container(border=True):
             st.markdown("### 输入主题，一键生成分镜脚本")
             user_input_3 = st.text_area("请输入你的产品、门店或想表达的主题：", height=100,
@@ -359,7 +386,6 @@ else:
 
             col_btn3, col_btn4 = st.columns([3, 1])
             with col_btn4:
-                # 去掉按钮上的打板
                 if st.button("一键生成爆款分镜", type="primary", use_container_width=True, key="btn_tab3"):
                     if not user_input_3.strip():
                         st.warning("请先输入你的主题哦！")
@@ -383,7 +409,6 @@ else:
 
         st.markdown("---")
         with st.container(border=True):
-            # 删除了剪刀表情
             st.markdown("### 拍完不会剪？一键获取剪映保姆级教程")
             if st.button("生成剪映实操教程", key="btn_jianying"):
                 script_content = st.session_state.get('last_script', user_input_3)
@@ -410,7 +435,6 @@ else:
 
         st.markdown("---")
         with st.container(border=True):
-            # 删除了摄像机表情
             st.markdown("### 视频剪辑成果检测与 AI 诊断")
             uploaded_video = st.file_uploader("请上传你的剪辑视频 (支持 mp4/mov/avi)", type=["mp4", "mov", "avi"])
             if uploaded_video is not None:
@@ -427,3 +451,11 @@ else:
                             st.markdown(review_response.choices[0].message.content)
                         except Exception as e:
                             st.error(f"诊断失败：{e}")
+
+    # ==================== 页面最底部技术指导 ====================
+    st.markdown("""
+    <div style="text-align: center; margin-top: 60px; padding-bottom: 30px; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+        <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 15px; width: 40%; margin-left: 30%;">
+        <p>技术指导：和云风 | 联系邮箱：1620339694@qq.com</p>
+    </div>
+    """, unsafe_allow_html=True)
