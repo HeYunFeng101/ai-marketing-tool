@@ -102,23 +102,37 @@ st.markdown(f"""
     margin-bottom: 5px;
 }}
 
-/* 🌟 输入框本体：改为浅灰色，文字纯白 */
-.stTextInput input, .stTextArea textarea {{
-    border-radius: 16px !important; 
-    border: 1px solid rgba(255, 255, 255, 0.4) !important; 
-    background-color: rgba(200, 200, 200, 0.25) !important; /* 半透明浅灰色 */
-    color: #ffffff !important; /* 字体纯白 */
+/* 🌟 彻底重写输入框样式：深空灰半透明 + 纯白文字 */
+div[data-baseweb="input"], div[data-baseweb="base-input"], 
+div[data-baseweb="textarea"], div[data-baseweb="base-textarea"],
+.stTextInput input, .stTextArea textarea,
+[data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea {{
+    background-color: rgba(40, 45, 60, 0.7) !important; /* 深灰半透明 */
+    color: #ffffff !important; /* 纯白文字 */
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     backdrop-filter: blur(10px) !important;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2) !important;
 }}
 
-/* 聚焦时稍微再亮一点 */
-.stTextInput input:focus, .stTextArea textarea:focus {{
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    background-color: rgba(220, 220, 220, 0.35) !important; 
-    transform: scale(1.01) !important; 
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2), inset 0 2px 5px rgba(0,0,0,0.2) !important;
+/* 移除 Streamlit 默认包裹层自带的边框和背景 */
+.stTextInput > div, .stTextArea > div,
+[data-testid="stTextInput"] > div, [data-testid="stTextArea"] > div {{
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}}
+
+/* 强制占位符（Placeholder）为浅灰色，确保能看清 */
+input::placeholder, textarea::placeholder {{
+    color: rgba(255, 255, 255, 0.4) !important; 
+}}
+
+/* 聚焦时的发光效果 */
+.stTextInput input:focus, .stTextArea textarea:focus,
+[data-testid="stTextInput"] input:focus, [data-testid="stTextArea"] textarea:focus {{
+    border: 1px solid rgba(139, 92, 246, 0.8) !important;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3) !important;
+    background-color: rgba(50, 55, 75, 0.8) !important;
 }}
 
 /* 按钮挤压感 */
