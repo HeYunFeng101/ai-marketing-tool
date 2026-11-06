@@ -102,21 +102,23 @@ st.markdown(f"""
     margin-bottom: 5px;
 }}
 
-/* 输入框本体 */
+/* 🌟 输入框本体：改为浅灰色，文字纯白 */
 .stTextInput input, .stTextArea textarea {{
     border-radius: 16px !important; 
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    background-color: rgba(255, 255, 255, 0.05) !important; 
-    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important; 
+    background-color: rgba(200, 200, 200, 0.25) !important; /* 半透明浅灰色 */
+    color: #ffffff !important; /* 字体纯白 */
     backdrop-filter: blur(10px) !important;
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.1) !important;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2) !important;
 }}
+
+/* 聚焦时稍微再亮一点 */
 .stTextInput input:focus, .stTextArea textarea:focus {{
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    background-color: rgba(220, 220, 220, 0.35) !important; 
     transform: scale(1.01) !important; 
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), inset 0 2px 5px rgba(0,0,0,0.1) !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2), inset 0 2px 5px rgba(0,0,0,0.2) !important;
 }}
 
 /* 按钮挤压感 */
@@ -175,7 +177,7 @@ st.markdown(f"""
     background: rgba(255, 255, 255, 0.08) !important;
 }}
 
-/* 🌟 新增：Markdown 表格的玻璃气泡化 */
+/* Markdown 表格的玻璃气泡化 */
 table {{
     width: 100% !important;
     border-collapse: separate !important;
@@ -216,6 +218,8 @@ client = OpenAI(api_key=API_KEY, base_url="https://api.deepseek.com")
 # 4. 初始化状态
 if "logged_in" not in st.session_state: st.session_state["logged_in"] = False
 if "user_phone" not in st.session_state: st.session_state["user_phone"] = ""
+if "review_input" not in st.session_state: st.session_state["review_input"] = ""
+if "review_result" not in st.session_state: st.session_state["review_result"] = ""
 
 # ==================== 登录界面 ====================
 if not st.session_state["logged_in"]:
@@ -304,12 +308,17 @@ else:
 
     tab1, tab2, tab3 = st.tabs(["直播违规词审查", "店铺口碑评估机", "短视频分镜与剪辑"])
 
-    # ==================== 选项卡 1 ====================
+    # ==================== 选项卡 1：违规审查 ====================
     with tab1:
         with st.container(border=True):
             st.markdown("### 输入直播带货脚本，AI 自动排查风险")
-            user_input_1 = st.text_area("请输入您的直播带货脚本：", height=120,
-                                        placeholder="例如：家人们，全网最低价的养生茶，喝了包治百病！")
+            user_input_1 = st.text_area(
+                "请输入您的直播带货脚本：",
+                value=st.session_state["review_input"],
+                height=120,
+                placeholder="例如：家人们，全网最低价的养生茶，喝了包治百病！"
+            )
+            st.session_state["review_input"] = user_input_1
 
             col_btn1, col_btn2 = st.columns([3, 1])
             with col_btn2:
@@ -317,7 +326,7 @@ else:
                     if not user_input_1.strip():
                         st.warning("请先输入文案哦！")
                     else:
-                        with st.spinner("AI 法务审查中..."):
+                        with st.spinner("AI 法务审查中... (可切换至其他标签页，任务将挂后台运行)"):
                             try:
                                 response = client.chat.completions.create(
                                     model="deepseek-flash",
@@ -325,13 +334,26 @@ else:
                                                "content": "你是一个资深的电商直播合规审查员。找出极限词、医疗夸大、侵权风险，并给出优化后的安全文案。"},
                                               {"role": "user", "content": user_input_1}]
                                 )
-                                st.markdown("---")
-                                st.markdown(response.choices[0].message.content)
+                                st.session_state["review_result"] = response.choices[0].message.content
+                                st.rerun()
                             except Exception as e:
                                 st.error(f"发生错误：{e}")
+
+        # ===== 居中结果展示区 =====
+        if st.session_state.get("review_result"):
+            st.markdown("---")
+            _, col_center, _ = st.columns([1, 5, 1])
+            with col_center:
+                st.success("✅ 审查已完成，结果已保存在后台工作区。")
+                with st.container(border=True):
+                    st.markdown(st.session_state["review_result"])
+                if st.button("🗑️ 清空当前审查记录"):
+                    st.session_state["review_result"] = ""
+                    st.rerun()
+
         st.info("示例输入：家人们，今天这款养生茶绝对是全网最低价！喝了包治百病，连医院都不用去了！")
 
-    # ==================== 选项卡 2 ====================
+    # ==================== 选项卡 2：口碑评估 ====================
     with tab2:
         with st.container(border=True):
             st.markdown("### 输入店铺信息，AI 生成情绪反馈")
@@ -368,9 +390,8 @@ else:
                             except Exception as e:
                                 st.error(f"发生错误：{e}")
 
-    # ==================== 选项卡 3 ====================
+    # ==================== 选项卡 3：短视频分镜与剪辑 ====================
     with tab3:
-        # 1. 参数和输入区（独立出来）
         with st.container(border=True):
             st.markdown("### 创作参数设置")
             col_p1, col_p2, col_p3 = st.columns(3)
@@ -402,7 +423,7 @@ else:
                         except Exception as e:
                             st.error(f"发生错误：{e}")
 
-        # 2. 结果展示区（占满全宽，拥有玻璃质感）
+        # 结果展示区（占满全宽，拥有玻璃质感）
         if 'last_script' in st.session_state and st.session_state['last_script']:
             st.markdown("<br>", unsafe_allow_html=True)
 
@@ -425,11 +446,8 @@ else:
             </div>
             """, unsafe_allow_html=True)
 
-            # 用一个全宽 Container 包裹表格
             with st.container(border=True):
                 st.markdown(st.session_state['last_script'])
-
-                # 这里原本的 st.code 会导致重复显示，用折叠框收起来
                 with st.expander("点击查看原始 Markdown 源码 (供复制)"):
                     st.code(st.session_state['last_script'], language="markdown")
 
@@ -477,7 +495,7 @@ else:
     # ==================== 底部技术指导 ====================
     st.markdown("""
     <div style="text-align: center; margin-top: 60px; padding-bottom: 30px; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
-        <hr style="border-color: rgba(255,255,255,0.1); margin-bottom: 15px; width: 40%; margin-left: 30%;">
+        <hr style="border-color: rgba(255, 255, 255, 0.1); margin-bottom: 15px; width: 40%; margin-left: 30%;">
         <p>技术指导：和云风 | 联系邮箱：1620339694@qq.com</p>
     </div>
     """, unsafe_allow_html=True)
