@@ -121,24 +121,31 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
 .stCodeBlock pre, .stCodeBlock code {{
     white-space: pre-wrap !important; word-wrap: break-word !important; word-break: normal !important;
 }}
+
+/* 彻底修复云端表格白线突兀问题 */
 .custom-table-container {{
     width: 100%; overflow-x: auto; border-radius: 16px;
     border: 1px solid rgba(255,255,255,0.15); background: rgba(255, 255, 255, 0.03);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }}
 .custom-table {{
-    width: 100%; table-layout: fixed; border-collapse: collapse; word-wrap: break-word; white-space: normal;
+    width: 100%; table-layout: fixed; border-collapse: collapse !important; /* 消除双线 */
+    word-wrap: break-word; white-space: normal; border: none !important;
 }}
 .custom-table th {{
     background: rgba(255, 255, 255, 0.1); color: #f8fafc; padding: 12px 10px; text-align: left;
-    font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2); word-wrap: break-word;
+    font-weight: bold; border: none !important; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important; word-wrap: break-word;
 }}
 .custom-table td {{
-    padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0;
-    line-height: 1.6; word-wrap: break-word; white-space: normal;
+    padding: 12px 10px; 
+    border: none !important; /* 暴力清除所有单元格边框 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; /* 只留微弱的底边 */
+    color: #e2e8f0; line-height: 1.6; word-wrap: break-word; white-space: normal;
 }}
-.custom-table tr:last-child td {{ border-bottom: none; }}
+.custom-table tr:last-child td {{ border-bottom: none !important; }}
 .custom-table tr:hover {{ background: rgba(255,255,255,0.05); }}
+
 .highlight-hit {{
     background-color: rgba(239, 68, 68, 0.4); color: #fca5a5; border: 1px solid #ef4444;
     padding: 2px 6px; border-radius: 6px; font-weight: bold;
@@ -152,6 +159,18 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
   .bubble-subtitle {{ font-size: 0.9rem !important; }}
   .stTabs [data-baseweb="tab"] {{ padding: 8px 14px !important; font-size: 0.85rem !important; }}
 }}
+
+/* 强制修复云端白底白字问题 */
+[data-testid="stAlert"] {{
+    background-color: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}}
+[data-testid="stAlert"] * {{ color: #f8fafc !important; }}
+[data-testid="stCodeBlock"] pre {{
+    background-color: #1e2030 !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}}
+[data-testid="stCodeBlock"] code {{ color: #a78bfa !important; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -239,7 +258,8 @@ def render_storyboard(last_script):
                 f'<col style="width:{w}%">' for w in _W[:len(header)]) + '</colgroup>') if len(header) <= len(
                 _W) else ''
 
-            html_table = df.to_html(index=False, classes='custom-table', escape=True, justify='left')
+            # 从源头禁用 border=1
+            html_table = df.to_html(index=False, classes='custom-table', escape=True, justify='left', border=0)
             html_table = re.sub(r'<table[^>]*>', f'<table class="custom-table">{colgroup_html}', html_table, count=1)
 
             st.markdown(f'<div class="custom-table-container">{html_table}</div>', unsafe_allow_html=True)
