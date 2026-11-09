@@ -49,12 +49,12 @@ st.markdown(f"""
     color: #f8fafc !important;
 }}
 
-/* 暴力修复 Toast 提示框白底白字问题 */
-[data-testid="stToast"] {{
+/* 暴力修复右上角 Toast 弹窗白底白字问题 */
+div[data-testid="stToast"], [data-baseweb="toast"] {{
     background-color: #262730 !important; 
     border: 1px solid rgba(255,255,255,0.2) !important;
 }}
-[data-testid="stToast"] * {{
+div[data-testid="stToast"] *, [data-baseweb="toast"] * {{
     color: white !important; 
 }}
 
@@ -268,9 +268,10 @@ if not st.session_state["logged_in"]:
                 st.write("")
                 if st.button("获取验证码", use_container_width=True):
                     if re.match(r"^1[3-9]\d{9}$", phone):
-                        st.success("✅ 验证码已发送！(测试环境请输入: 1234)")
+                        # 还原回弹窗模式，搭配 CSS 修复，完美显示
+                        st.toast("验证码已发送！(测试环境: 1234)", icon="✅")
                     else:
-                        st.error("❌ 请输入正确的手机号！")
+                        st.toast("请输入正确的手机号！", icon="❌")
 
             st.write("")
             if st.button("登录 / 进入系统", type="primary", use_container_width=True):
