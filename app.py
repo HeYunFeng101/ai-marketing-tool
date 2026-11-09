@@ -49,6 +49,15 @@ st.markdown(f"""
     color: #f8fafc !important;
 }}
 
+/* 暴力修复 Toast 提示框白底白字问题 */
+[data-testid="stToast"] {{
+    background-color: #262730 !important; 
+    border: 1px solid rgba(255,255,255,0.2) !important;
+}}
+[data-testid="stToast"] * {{
+    color: white !important; 
+}}
+
 /* 标题气泡 */
 .bubble-title {{
     display: inline-flex;
@@ -102,34 +111,31 @@ st.markdown(f"""
     margin-bottom: 5px;
 }}
 
-/* 🌟 彻底重写输入框样式：深空灰半透明 + 纯白文字 */
-div[data-baseweb="input"], div[data-baseweb="base-input"], 
-div[data-baseweb="textarea"], div[data-baseweb="base-textarea"],
-.stTextInput input, .stTextArea textarea,
-[data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea {{
-    background-color: rgba(40, 45, 60, 0.7) !important; /* 深灰半透明 */
-    color: #ffffff !important; /* 纯白文字 */
-    border-radius: 12px !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+/* 输入框本体：深空灰半透明 + 纯白文字 */
+.stTextInput input, .stTextArea textarea {{
+    border-radius: 16px !important; 
+    border: 1px solid rgba(255, 255, 255, 0.4) !important; 
+    background-color: rgba(40, 45, 60, 0.7) !important; 
+    color: #ffffff !important; 
     backdrop-filter: blur(10px) !important;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2) !important;
 }}
 
 /* 移除 Streamlit 默认包裹层自带的边框和背景 */
-.stTextInput > div, .stTextArea > div,
-[data-testid="stTextInput"] > div, [data-testid="stTextArea"] > div {{
+.stTextInput > div, .stTextArea > div {{
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }}
 
-/* 强制占位符（Placeholder）为浅灰色，确保能看清 */
+/* 占位符文字颜色 */
 input::placeholder, textarea::placeholder {{
     color: rgba(255, 255, 255, 0.4) !important; 
 }}
 
-/* 聚焦时的发光效果 */
-.stTextInput input:focus, .stTextArea textarea:focus,
-[data-testid="stTextInput"] input:focus, [data-testid="stTextArea"] textarea:focus {{
+/* 聚焦时高亮 */
+.stTextInput input:focus, .stTextArea textarea:focus {{
     border: 1px solid rgba(139, 92, 246, 0.8) !important;
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3) !important;
     background-color: rgba(50, 55, 75, 0.8) !important;
@@ -262,9 +268,9 @@ if not st.session_state["logged_in"]:
                 st.write("")
                 if st.button("获取验证码", use_container_width=True):
                     if re.match(r"^1[3-9]\d{9}$", phone):
-                        st.toast("验证码已发送！(测试环境: 1234)", icon="✅")
+                        st.success("✅ 验证码已发送！(测试环境请输入: 1234)")
                     else:
-                        st.toast("请输入正确的手机号！", icon="❌")
+                        st.error("❌ 请输入正确的手机号！")
 
             st.write("")
             if st.button("登录 / 进入系统", type="primary", use_container_width=True):
