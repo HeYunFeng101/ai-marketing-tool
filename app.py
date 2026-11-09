@@ -142,7 +142,7 @@ input::placeholder, textarea::placeholder {{
 }}
 
 /* 按钮挤压感 */
-.stButton > button {{
+.stButton > button, .stFormSubmitButton > button, .stDownloadButton > button {{
     background: rgba(255, 255, 255, 0.08) !important;
     backdrop-filter: blur(12px) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -153,7 +153,7 @@ input::placeholder, textarea::placeholder {{
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255,255,255,0.5) !important;
 }}
-.stButton > button:hover {{
+.stButton > button:hover, .stFormSubmitButton > button:hover, .stDownloadButton > button:hover {{
     transform: scale(1.08, 0.92) !important; 
     background: rgba(255, 255, 255, 0.15) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
@@ -258,35 +258,41 @@ if not st.session_state["logged_in"]:
     with col2:
         with st.container(border=True):
             st.markdown("### 手机号快捷登录 / 注册")
-            phone = st.text_input("请输入您的手机号", placeholder="请输入 11 位手机号", max_chars=11)
 
-            col_code1, col_code2 = st.columns([2, 1])
-            with col_code1:
-                verify_code = st.text_input("请输入验证码", placeholder="输入 4 位验证码", max_chars=4)
-            with col_code2:
+            # 使用表单包裹，回车/点击均可提交
+            with st.form("login_form", clear_on_submit=False):
+                phone = st.text_input("请输入您的手机号", placeholder="请输入 11 位手机号", max_chars=11)
+
+                col_code1, col_code2 = st.columns([2, 1])
+                with col_code1:
+                    verify_code = st.text_input("请输入验证码", placeholder="输入 4 位验证码", max_chars=4)
+                with col_code2:
+                    st.write("")
+                    st.write("")
+                    submit_code = st.form_submit_button("获取验证码", use_container_width=True)
+
                 st.write("")
-                st.write("")
-                if st.button("获取验证码", use_container_width=True):
+                submit_login = st.form_submit_button("登录 / 进入系统", type="primary", use_container_width=True)
+
+                if submit_code:
                     if re.match(r"^1[3-9]\d{9}$", phone):
-                        # 还原回弹窗模式，搭配 CSS 修复，完美显示
                         st.toast("验证码已发送！(测试环境: 1234)", icon="✅")
                     else:
                         st.toast("请输入正确的手机号！", icon="❌")
 
-            st.write("")
-            if st.button("登录 / 进入系统", type="primary", use_container_width=True):
-                if not phone or not verify_code:
-                    st.warning("手机号和验证码不能为空哦！")
-                elif not re.match(r"^1[3-9]\d{9}$", phone):
-                    st.error("手机号格式不正确，请检查！")
-                elif verify_code != "1234":
-                    st.error("验证码错误！")
-                else:
-                    with st.spinner("正在安全登录..."):
-                        time.sleep(1)
-                        st.session_state["logged_in"] = True
-                        st.session_state["user_phone"] = phone[:3] + "****" + phone[-4:]
-                        st.rerun()
+                if submit_login:
+                    if not phone or not verify_code:
+                        st.warning("手机号和验证码不能为空哦！")
+                    elif not re.match(r"^1[3-9]\d{9}$", phone):
+                        st.error("手机号格式不正确，请检查！")
+                    elif verify_code != "1234":
+                        st.error("验证码错误！")
+                    else:
+                        with st.spinner("正在安全登录..."):
+                            time.sleep(1)
+                            st.session_state["logged_in"] = True
+                            st.session_state["user_phone"] = phone[:3] + "****" + phone[-4:]
+                            st.rerun()
 
         st.markdown("""
         <div style="text-align: center; margin-top: 30px; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
@@ -329,7 +335,7 @@ else:
 
     tab1, tab2, tab3 = st.tabs(["直播违规词审查", "店铺口碑评估机", "短视频分镜与剪辑"])
 
-    # ==================== 选项卡 1：违规审查 ====================
+    # ==================== 选项卡 1：违规审查（结构化表格 + 导出） ====================
     with tab1:
         with st.container(border=True):
             st.markdown("### 输入直播带货脚本，AI 自动排查风险")
@@ -351,24 +357,37 @@ else:
                             try:
                                 response = client.chat.completions.create(
                                     model="deepseek-flash",
-                                    messages=[{"role": "system",
-                                               "content": "你是一个资深的电商直播合规审查员。找出极限词、医疗夸大、侵权风险，并给出优化后的安全文案。"},
-                                              {"role": "user", "content": user_input_1}]
+                                    messages=[
+                                        {"role": "system",
+                                         "content": "你是一个资深的电商直播合规审查员。请严格按照以下 Markdown 表格格式输出审查结果：\n\n| 风险等级 | 原文片段 | 风险类型 | 法律依据 | 建议改写 |\n|---|---|---|---|---|\n| 高危/中危/低危 | (提取原话) | (极限词/医疗夸大等) | (如广告法第九条) | (给出安全文案) |\n\n最后在表格下方，单独输出一段【合规改写后的完整安全版】。"},
+                                        {"role": "user", "content": user_input_1}
+                                    ]
                                 )
                                 st.session_state["review_result"] = response.choices[0].message.content
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"发生错误：{e}")
 
-        # ===== 居中结果展示区 =====
+        # ===== 居中结果展示区 + 导出按钮 =====
         if st.session_state.get("review_result"):
             st.markdown("---")
-            _, col_center, _ = st.columns([1, 5, 1])
+            _, col_center, _ = st.columns([1, 6, 1])
             with col_center:
-                st.success("✅ 审查已完成，结果已保存在后台工作区。")
+                st.success("✅ 审查已完成，结构化报告已生成。")
                 with st.container(border=True):
                     st.markdown(st.session_state["review_result"])
-                if st.button("🗑️ 清空当前审查记录"):
+
+                # 新增一键导出
+                st.download_button(
+                    label="📥 导出审查报告 (TXT)",
+                    data=st.session_state["review_result"],
+                    file_name="直播合规审查报告.txt",
+                    mime="text/plain",
+                    type="primary",
+                    use_container_width=True
+                )
+
+                if st.button("🗑️ 清空当前审查记录", use_container_width=True):
                     st.session_state["review_result"] = ""
                     st.rerun()
 
@@ -469,8 +488,16 @@ else:
 
             with st.container(border=True):
                 st.markdown(st.session_state['last_script'])
-                with st.expander("点击查看原始 Markdown 源码 (供复制)"):
-                    st.code(st.session_state['last_script'], language="markdown")
+
+                # 新增分镜一键导出
+                st.download_button(
+                    label="📥 导出分镜脚本 (Markdown)",
+                    data=st.session_state['last_script'],
+                    file_name=f"{platform}_分镜脚本.md",
+                    mime="text/markdown",
+                    type="secondary",
+                    use_container_width=True
+                )
 
         # 剪映教程与视频诊断
         st.markdown("---")
