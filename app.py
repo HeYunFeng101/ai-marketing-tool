@@ -267,7 +267,9 @@ def render_storyboard(last_script):
                     data.append(merged)
 
             if not data:
-                st.warning("AI 输出的表格格式不完整，已展示原始文本：")
+                st.markdown(
+                    '<div style="background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 15px; border-radius: 12px; color: #fcd34d; margin-bottom: 15px; font-weight: bold;">⚠️ AI 输出的表格格式不完整，已展示原始文本：</div>',
+                    unsafe_allow_html=True)
                 st.markdown(last_script)
                 return
 
@@ -308,7 +310,9 @@ def render_storyboard(last_script):
                 st.download_button("📥 导出修改后的执行清单 (CSV)", csv, f"执行清单_{ts}.csv", "text/csv",
                                    type="primary", use_container_width=True)
     except Exception as e:
-        st.warning(f"分镜表结构化失败，已展示原始文本：{e}")
+        st.markdown(
+            f'<div style="background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 15px; border-radius: 12px; color: #fcd34d; margin-bottom: 15px; font-weight: bold;">⚠️ 分镜表结构化失败，已展示原始文本：{e}</div>',
+            unsafe_allow_html=True)
         st.markdown(last_script)
 
 
@@ -352,11 +356,18 @@ if not st.session_state["logged_in"]:
 
                 if submit_login:
                     if not phone or not verify_code:
-                        st.warning("手机号和验证码不能为空哦！")
+                        # 🌟 替换为纯 HTML 警告框
+                        st.markdown(
+                            '<div style="background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 15px; border-radius: 12px; color: #fcd34d; margin-bottom: 15px; font-weight: bold;">⚠️ 手机号和验证码不能为空哦！</div>',
+                            unsafe_allow_html=True)
                     elif not re.match(r"^1[3-9]\d{9}$", phone):
-                        st.error("手机号格式不正确，请检查！")
+                        st.markdown(
+                            '<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">❌ 手机号格式不正确，请检查！</div>',
+                            unsafe_allow_html=True)
                     elif verify_code != st.session_state.get("sms_code"):
-                        st.error("验证码错误！")
+                        st.markdown(
+                            '<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">❌ 验证码错误！</div>',
+                            unsafe_allow_html=True)
                     else:
                         with st.spinner("正在安全登录..."):
                             time.sleep(0.3)
@@ -434,7 +445,9 @@ else:
 
             if st.button("一键生成爆款分镜", type="primary", use_container_width=True, key="btn_tab3"):
                 if not st.session_state.get("dir_input", "").strip():
-                    st.warning("请先输入你的主题哦！")
+                    st.markdown(
+                        '<div style="background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 15px; border-radius: 12px; color: #fcd34d; margin-bottom: 15px; font-weight: bold;">⚠️ 请先输入你的主题哦！</div>',
+                        unsafe_allow_html=True)
                 else:
                     system_prompt = f"""你是一个拥有千万粉丝的短视频爆款操盘手。请生成分镜脚本。目标平台【{platform}】，受众【{audience}】，风格【{style}】。
 
@@ -508,7 +521,9 @@ else:
                 if st.button("生成剪映实操教程", key="btn_jianying", use_container_width=True):
                     script_content = st.session_state.get('last_script', st.session_state.get("dir_input", ""))
                     if not script_content:
-                        st.warning("请先生成分镜脚本！")
+                        st.markdown(
+                            '<div style="background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 15px; border-radius: 12px; color: #fcd34d; margin-bottom: 15px; font-weight: bold;">⚠️ 请先生成分镜脚本！</div>',
+                            unsafe_allow_html=True)
                     else:
                         try:
                             loading_ph = st.empty()
@@ -534,7 +549,9 @@ else:
                 uploaded_video = st.file_uploader("上传剪辑视频 (mp4/mov/avi)", type=["mp4", "mov", "avi"])
                 if uploaded_video is not None:
                     if uploaded_video.size > 50 * 1024 * 1024:
-                        st.error("视频过大，建议上传 < 50MB 的剪辑片段")
+                        st.markdown(
+                            '<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">❌ 视频过大，建议上传 < 50MB 的剪辑片段</div>',
+                            unsafe_allow_html=True)
                     else:
                         st.video(uploaded_video)
                         user_desc = st.text_area("剪辑难点？", key="video_diag_input",
@@ -577,7 +594,9 @@ else:
             if st.button("开启双层合规审查", type="primary", use_container_width=True, key="btn_tab1"):
                 input_text = st.session_state.get("review_input", "")
                 if not input_text.strip():
-                    st.warning("请先输入文案哦！")
+                    st.markdown(
+                        '<div style="background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 15px; border-radius: 12px; color: #fcd34d; margin-bottom: 15px; font-weight: bold;">⚠️ 请先输入文案哦！</div>',
+                        unsafe_allow_html=True)
                 else:
                     try:
                         local_rules = ["全网最低", "绝对", "第一", "包治百病", "连医院都不用去", "最便宜", "特效"]
@@ -632,7 +651,9 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.info("⚠️ AI 未给出确切评分，请人工复核。")
+                st.markdown(
+                    '<div style="background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 15px; border-radius: 12px; color: #fcd34d; margin-bottom: 15px; font-weight: bold;">⚠️ AI 未给出确切评分，请人工复核。</div>',
+                    unsafe_allow_html=True)
 
             col_left, col_right = st.columns(2)
 
@@ -652,7 +673,9 @@ else:
                         f'<div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); margin-bottom:15px; line-height:1.8;">{display_text}</div>',
                         unsafe_allow_html=True)
                 else:
-                    st.info(st.session_state.get("review_input", ""))
+                    st.markdown(
+                        f'<div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); margin-bottom:15px; line-height:1.8;">{html.escape(st.session_state.get("review_input", ""))}</div>',
+                        unsafe_allow_html=True)
 
                 verdict = re.search(r'【判定结论】\s*(.+)', analysis_text)
                 if verdict:
