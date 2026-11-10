@@ -43,11 +43,20 @@ st.markdown(f"""
 }}
 .stMarkdown, p, h1, h2, h3, h4, label, span {{ color: #f8fafc !important; }}
 
-/* 修复 Toast */
+/* 暴力修复 Toast 和 加载转圈圈背景 */
 div[data-testid="stToast"], [data-baseweb="toast"] {{
     background-color: #262730 !important; border: 1px solid rgba(255,255,255,0.2) !important;
 }}
 div[data-testid="stToast"] *, [data-baseweb="toast"] * {{ color: white !important; }}
+
+/* 干掉原生的浅色分割线 hr */
+hr {{
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: transparent !important;
+}}
+[data-testid="stVerticalBlock"] > div > div > div > hr {{
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}}
 
 .bubble-title {{
     display: inline-flex; align-items: center; background: rgba(255, 255, 255, 0.08);
@@ -86,7 +95,7 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
     background-color: rgba(50, 55, 75, 0.8) !important;
 }}
 
-/* 🌟 修复下拉框和单选框 */
+/* 修复下拉框和单选框 */
 div[data-baseweb="select"] > div {{
     background-color: rgba(40, 45, 60, 0.7) !important; color: white !important;
     border: 1px solid rgba(255,255,255,0.2) !important;
@@ -139,19 +148,23 @@ div[data-testid="stRadio"] label {{ color: white !important; }}
     background: rgba(255, 255, 255, 0.08) !important;
 }}
 
-/* 🌟 暴力修复 st.status 在云端变白的问题 */
+/* 🌟 暴力修复 st.status 及加载转圈圈在云端变白的问题 */
 [data-testid="stStatusWidget"] {{
-    background-color: rgba(30, 33, 48, 0.9) !important; /* 深色磨砂背景 */
+    background-color: rgba(30, 33, 48, 0.9) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 12px !important;
 }}
-[data-testid="stStatusWidget"] > div,
-[data-testid="stStatusWidget"] details,
-[data-testid="stStatusWidget"] summary,
-[data-testid="stStatusWidget"] p,
-[data-testid="stStatusWidget"] span {{
+[data-testid="stStatusWidget"] * {{
     background-color: transparent !important;
     color: #f8fafc !important;
+}}
+/* 强制干掉加载器（Spinner）的白底 */
+div[data-testid="stSpinner"] > div {{
+    background-color: transparent !important;
+    color: white !important;
+}}
+div[data-testid="stSpinner"] {{
+    background-color: transparent !important;
 }}
 
 /* 🌟 暴力修复云端代码块，强制定制背景色 */
