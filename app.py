@@ -154,29 +154,29 @@ div[data-testid="stCodeBlock"] *, div[data-testid="stCodeBlock"] code {{
     color: #e2e8f0 !important;
 }}
 
-/* 修复表格白线 */
-.custom-table-container {{
-    width: 100%; overflow-x: auto; border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.15); background: rgba(255, 255, 255, 0.03);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+/* ========================================================
+   🌟 究极暴击：干掉所有的表格白线和白底
+   ======================================================== */
+[data-testid="stMarkdownContainer"] table,
+[data-testid="stMarkdownContainer"] thead,
+[data-testid="stMarkdownContainer"] tbody,
+[data-testid="stMarkdownContainer"] tfoot,
+[data-testid="stMarkdownContainer"] tr,
+[data-testid="stMarkdownContainer"] th,
+[data-testid="stMarkdownContainer"] td {{
+    border: none !important;
+    border-color: transparent !important;
+    background-color: transparent !important;
 }}
-.custom-table {{
-    width: 100%; table-layout: fixed; border-collapse: collapse !important;
-    word-wrap: break-word; white-space: normal; border: none !important;
+[data-testid="stMarkdownContainer"] th {{
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #f8fafc !important;
 }}
-.custom-table th {{
-    background: rgba(255, 255, 255, 0.1); color: #f8fafc; padding: 12px 10px; text-align: left;
-    font-weight: bold; border: none !important; 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important; word-wrap: break-word;
+[data-testid="stMarkdownContainer"] td {{
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: #e2e8f0 !important;
 }}
-.custom-table td {{
-    padding: 12px 10px; 
-    border: none !important; 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; 
-    color: #e2e8f0; line-height: 1.6; word-wrap: break-word; white-space: normal;
-}}
-.custom-table tr:last-child td {{ border-bottom: none !important; }}
-.custom-table tr:hover {{ background: rgba(255,255,255,0.05); }}
 
 .highlight-hit {{
     background-color: rgba(239, 68, 68, 0.4); color: #fca5a5; border: 1px solid #ef4444;
@@ -281,9 +281,13 @@ def render_storyboard(last_script):
                 _W) else ''
 
             html_table = df.to_html(index=False, classes='custom-table', escape=True, justify='left', border=0)
-            html_table = re.sub(r'<table[^>]*>', f'<table class="custom-table">{colgroup_html}', html_table, count=1)
+            html_table = re.sub(r'<table[^>]*>',
+                                f'<table class="custom-table" style="border:none; border-collapse:collapse;">{colgroup_html}',
+                                html_table, count=1)
 
-            st.markdown(f'<div class="custom-table-container">{html_table}</div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="custom-table-container" style="border:none; background:transparent;">{html_table}</div>',
+                unsafe_allow_html=True)
 
             with st.expander("✏️ 展开以双击修改分镜表 & 导出"):
                 config = {}
@@ -356,7 +360,6 @@ if not st.session_state["logged_in"]:
 
                 if submit_login:
                     if not phone or not verify_code:
-                        # 🌟 替换为纯 HTML 警告框
                         st.markdown(
                             '<div style="background-color: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 15px; border-radius: 12px; color: #fcd34d; margin-bottom: 15px; font-weight: bold;">⚠️ 手机号和验证码不能为空哦！</div>',
                             unsafe_allow_html=True)
@@ -486,7 +489,9 @@ else:
                         time.sleep(0.5)
                         st.rerun()
                     except Exception as e:
-                        st.error(friendly_error(e))
+                        st.markdown(
+                            f'<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">❌ 发生错误：{e}</div>',
+                            unsafe_allow_html=True)
 
         if st.session_state['last_script']:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -541,7 +546,9 @@ else:
                             if not is_error:
                                 st.session_state["ai_calls"] += 1
                         except Exception as e:
-                            st.error(friendly_error(e))
+                            st.markdown(
+                                f'<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">❌ 发生错误：{e}</div>',
+                                unsafe_allow_html=True)
 
         with col_j2:
             with st.container(border=True):
@@ -574,7 +581,9 @@ else:
                                 if not is_error:
                                     st.session_state["ai_calls"] += 1
                             except Exception as e:
-                                st.error(friendly_error(e))
+                                st.markdown(
+                                    f'<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">❌ 发生错误：{e}</div>',
+                                    unsafe_allow_html=True)
 
     # ==================== 选项卡 2：合规审查 ====================
     with tab2:
@@ -625,7 +634,9 @@ else:
                         time.sleep(0.5)
                         st.rerun()
                     except Exception as e:
-                        st.error(friendly_error(e))
+                        st.markdown(
+                            f'<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">❌ 发生错误：{e}</div>',
+                            unsafe_allow_html=True)
 
         if st.session_state.get("review_result"):
             st.markdown("---")
