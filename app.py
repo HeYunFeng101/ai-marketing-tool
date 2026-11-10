@@ -155,16 +155,15 @@ div[data-testid="stCodeBlock"] *, div[data-testid="stCodeBlock"] code {{
 }}
 
 /* ========================================================
-   🌟 终极绝杀：干掉表格所有的边框
+   🌟 终极妥协：把表格边框换成极暗的浅灰色，让它在视觉上“隐形”
    ======================================================== */
 table {{
-    border: none !important; 
+    border: 1px solid rgba(255, 255, 255, 0.08) !important; 
     border-collapse: collapse !important;
     background-color: transparent !important;
 }}
 thead, tbody, tfoot, tr, th, td {{
-    border: none !important;
-    border-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     background-color: transparent !important;
 }}
 th {{
@@ -176,6 +175,9 @@ td {{
     border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
     color: #e2e8f0 !important;
 }}
+/* 干掉 st.data_editor 的原生白线 */
+div[data-testid="stDataFrame"] {{ border: none !important; }}
+div[data-testid="stDataFrame"] table {{ border: 1px solid rgba(255,255,255,0.08) !important; }}
 
 .highlight-hit {{
     background-color: rgba(239, 68, 68, 0.4); color: #fca5a5; border: 1px solid #ef4444;
@@ -242,7 +244,6 @@ def render_custom_markdown(text):
     """将文本中的 Markdown 表格抽离并转为无边框的纯 HTML 表格"""
     lines = text.split('\n')
     table_lines = []
-    text_lines = []
 
     def _is_md_separator(line):
         cells = [c.strip() for c in line.strip().strip('|').split('|')]
@@ -267,11 +268,10 @@ def render_custom_markdown(text):
 
                     if data:
                         df = pd.DataFrame(data, columns=header)
-                        # 强制内联 style="border: none;" 并且加 !important 的逻辑
                         html_table = df.to_html(index=False, classes='custom-table', escape=True, border=0)
-                        # 极其暴力的替换，确保任何可能的 border 都被干掉
+                        # 强制内联浅灰色边框
                         html_table = re.sub(r'<table[^>]*>',
-                                            '<table class="custom-table" style="border:none !important; border-collapse:collapse !important; background:transparent !important;">',
+                                            '<table class="custom-table" style="border:1px solid rgba(255,255,255,0.08) !important; border-collapse:collapse !important; background:transparent !important;">',
                                             html_table, count=1)
                         st.markdown(
                             f'<div style="width:100%; overflow-x:auto; border:none !important; background:transparent !important;">{html_table}</div>',
@@ -288,7 +288,6 @@ def render_custom_markdown(text):
         else:
             flush_table()
             if line.strip():
-                text_lines.append(line)
                 st.markdown(line)
     flush_table()
 
@@ -331,7 +330,7 @@ def render_storyboard(last_script):
 
             html_table = df.to_html(index=False, classes='custom-table', escape=True, justify='left', border=0)
             html_table = re.sub(r'<table[^>]*>',
-                                f'<table class="custom-table" style="border:none !important; border-collapse:collapse !important; background:transparent !important;">{colgroup_html}',
+                                f'<table class="custom-table" style="border:1px solid rgba(255,255,255,0.08) !important; border-collapse:collapse !important; background:transparent !important;">{colgroup_html}',
                                 html_table, count=1)
 
             st.markdown(
