@@ -43,20 +43,17 @@ st.markdown(f"""
 }}
 .stMarkdown, p, h1, h2, h3, h4, label, span {{ color: #f8fafc !important; }}
 
-/* 暴力修复 Toast 和 加载转圈圈背景 */
-div[data-testid="stToast"], [data-baseweb="toast"] {{
-    background-color: #262730 !important; border: 1px solid rgba(255,255,255,0.2) !important;
-}}
-div[data-testid="stToast"] *, [data-baseweb="toast"] * {{ color: white !important; }}
-
-/* 干掉原生的浅色分割线 hr */
+/* 强制消除所有原生的白色分割线 hr */
 hr {{
     border-color: rgba(255, 255, 255, 0.1) !important;
     background-color: transparent !important;
 }}
-[data-testid="stVerticalBlock"] > div > div > div > hr {{
-    border-color: rgba(255, 255, 255, 0.1) !important;
+
+/* 修复 Toast */
+div[data-testid="stToast"], [data-baseweb="toast"] {{
+    background-color: #262730 !important; border: 1px solid rgba(255,255,255,0.2) !important;
 }}
+div[data-testid="stToast"] *, [data-baseweb="toast"] * {{ color: white !important; }}
 
 .bubble-title {{
     display: inline-flex; align-items: center; background: rgba(255, 255, 255, 0.08);
@@ -148,26 +145,7 @@ div[data-testid="stRadio"] label {{ color: white !important; }}
     background: rgba(255, 255, 255, 0.08) !important;
 }}
 
-/* 🌟 暴力修复 st.status 及加载转圈圈在云端变白的问题 */
-[data-testid="stStatusWidget"] {{
-    background-color: rgba(30, 33, 48, 0.9) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 12px !important;
-}}
-[data-testid="stStatusWidget"] * {{
-    background-color: transparent !important;
-    color: #f8fafc !important;
-}}
-/* 强制干掉加载器（Spinner）的白底 */
-div[data-testid="stSpinner"] > div {{
-    background-color: transparent !important;
-    color: white !important;
-}}
-div[data-testid="stSpinner"] {{
-    background-color: transparent !important;
-}}
-
-/* 🌟 暴力修复云端代码块，强制定制背景色 */
+/* 🌟 暴力修复代码块 */
 div[data-testid="stCodeBlock"], div[data-testid="stCodeBlock"] > div, div[data-testid="stCodeBlock"] pre {{
     background-color: #1a1c24 !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -465,17 +443,18 @@ else:
 第一部分：Markdown表格，包含六列：| 镜号 | 时间 | 景别与运镜 | 画面动作 | 口播文案 | 音效 |
 第二部分：在表格下方，写上“【运营建议】”，然后列出：1.黄金3秒钩子；2.爆款标题备选（至少3个）；3.话题标签；4.封面建议。"""
                     try:
-                        with st.status("AI 导演正在构思分镜...", expanded=True) as status:
-                            full_text = st.write_stream(stream_chat([{"role": "system", "content": system_prompt},
-                                                                     {"role": "user",
-                                                                      "content": f"我的主题是：{st.session_state['dir_input']}"}],
-                                                                    temperature=TEMP_SCRIPT))
-                            is_error = ERR_PREFIX.strip() in full_text
-                            if is_error:
-                                status.update(label="生成失败 ❌", state="error", expanded=True)
-                            else:
-                                status.update(label="分镜生成完成 ✅", state="complete", expanded=False)
+                        loading_ph = st.empty()
+                        loading_ph.markdown(
+                            '<div style="color:#8b5cf6; font-weight:bold; padding: 10px 0;">✍️ AI 导演正在构思分镜，流式输出中...</div>',
+                            unsafe_allow_html=True)
 
+                        full_text = st.write_stream(stream_chat([{"role": "system", "content": system_prompt},
+                                                                 {"role": "user",
+                                                                  "content": f"我的主题是：{st.session_state['dir_input']}"}],
+                                                                temperature=TEMP_SCRIPT))
+                        loading_ph.empty()
+
+                        is_error = ERR_PREFIX.strip() in full_text
                         if is_error:
                             st.session_state.pop("script_editor", None)
                             st.stop()
@@ -532,15 +511,18 @@ else:
                         st.warning("请先生成分镜脚本！")
                     else:
                         try:
-                            with st.status("AI 导师正在定制教程...", expanded=True) as status:
-                                full_text = st.write_stream(stream_chat([{"role": "system",
-                                                                          "content": f"你是剪辑导师。根据脚本【{script_content}】，写“剪映”App实操教程。细化到点哪个按钮。"},
-                                                                         {"role": "user", "content": "教程。"}],
-                                                                        temperature=TEMP_EDIT))
-                                is_error = ERR_PREFIX.strip() in full_text
-                                status.update(label="生成失败 ❌" if is_error else "教程生成完成 ✅",
-                                              state="error" if is_error else "complete",
-                                              expanded=True if is_error else False)
+                            loading_ph = st.empty()
+                            loading_ph.markdown(
+                                '<div style="color:#8b5cf6; font-weight:bold; padding: 10px 0;">✍️ AI 导师正在定制教程...</div>',
+                                unsafe_allow_html=True)
+
+                            full_text = st.write_stream(stream_chat([{"role": "system",
+                                                                      "content": f"你是剪辑导师。根据脚本【{script_content}】，写“剪映”App实操教程。细化到点哪个按钮。"},
+                                                                     {"role": "user", "content": "教程。"}],
+                                                                    temperature=TEMP_EDIT))
+                            loading_ph.empty()
+
+                            is_error = ERR_PREFIX.strip() in full_text
                             if not is_error:
                                 st.session_state["ai_calls"] += 1
                         except Exception as e:
@@ -560,15 +542,18 @@ else:
                         if st.button("获取 AI 专家修改建议", type="primary", key="btn_review",
                                      use_container_width=True):
                             try:
-                                with st.status("AI 专家正在分析痛点...", expanded=True) as status:
-                                    full_text = st.write_stream(stream_chat([{"role": "system",
-                                                                              "content": f"你是编导。脚本【{st.session_state.get('last_script', '')}】。难点【{user_desc}】。请给出诊断和剪映建议。"},
-                                                                             {"role": "user", "content": "建议。"}],
-                                                                            temperature=TEMP_DIAG))
-                                    is_error = ERR_PREFIX.strip() in full_text
-                                    status.update(label="生成失败 ❌" if is_error else "诊断生成完成 ✅",
-                                                  state="error" if is_error else "complete",
-                                                  expanded=True if is_error else False)
+                                loading_ph = st.empty()
+                                loading_ph.markdown(
+                                    '<div style="color:#8b5cf6; font-weight:bold; padding: 10px 0;">✍️ AI 专家正在分析痛点...</div>',
+                                    unsafe_allow_html=True)
+
+                                full_text = st.write_stream(stream_chat([{"role": "system",
+                                                                          "content": f"你是编导。脚本【{st.session_state.get('last_script', '')}】。难点【{user_desc}】。请给出诊断和剪映建议。"},
+                                                                         {"role": "user", "content": "建议。"}],
+                                                                        temperature=TEMP_DIAG))
+                                loading_ph.empty()
+
+                                is_error = ERR_PREFIX.strip() in full_text
                                 if not is_error:
                                     st.session_state["ai_calls"] += 1
                             except Exception as e:
@@ -599,18 +584,19 @@ else:
                         hits = [word for word in local_rules if word in input_text]
                         rule_msg = f"\n\n【注意】本地规则库已命中：{hits}，请重点报告。" if hits else ""
 
-                        with st.status("双层引擎审查中...", expanded=True) as status:
-                            full_text = st.write_stream(stream_chat(
-                                [{"role": "system",
-                                  "content": "你是资深法务。请严格按以下格式输出：\n1. 第一行必须输出【风险评分：X分】（0-100分，越高风险越大）。\n2. 第二行输出【判定结论】。\n3. 用 Markdown 表格输出风险清单（列名：风险等级 | 原文片段 | 风险类型 | 法律依据(如广告法第X条) | 安全改写）。\n4. 最后输出【安全版口播稿】：一段完整的修改后文案。"},
-                                 {"role": "user", "content": f"待审原文：{input_text}{rule_msg}"}],
-                                temperature=TEMP_LEGAL
-                            ))
-                            is_error = ERR_PREFIX.strip() in full_text
-                            status.update(label="审查失败 ❌" if is_error else "审查完成 ✅",
-                                          state="error" if is_error else "complete",
-                                          expanded=True if is_error else False)
+                        loading_ph = st.empty()
+                        loading_ph.markdown(
+                            '<div style="color:#8b5cf6; font-weight:bold; padding: 10px 0;">✍️ 双层引擎审查中，正在生成结构化报告...</div>',
+                            unsafe_allow_html=True)
 
+                        full_text = st.write_stream(stream_chat(
+                            [{"role": "system",
+                              "content": "你是资深法务。请严格按以下格式输出：\n1. 第一行必须输出【风险评分：X分】（0-100分，越高风险越大）。\n2. 第二行输出【判定结论】。\n3. 用 Markdown 表格输出风险清单（列名：风险等级 | 原文片段 | 风险类型 | 法律依据(如广告法第X条) | 安全改写）。\n4. 最后输出【安全版口播稿】：一段完整的修改后文案。"},
+                             {"role": "user", "content": f"待审原文：{input_text}{rule_msg}"}], temperature=TEMP_LEGAL
+                        ))
+                        loading_ph.empty()
+
+                        is_error = ERR_PREFIX.strip() in full_text
                         if is_error:
                             st.stop()
 
