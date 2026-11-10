@@ -155,25 +155,24 @@ div[data-testid="stCodeBlock"] *, div[data-testid="stCodeBlock"] code {{
 }}
 
 /* ========================================================
-   🌟 究极暴击：干掉所有的表格白线和白底
+   🌟 终极绝杀：干掉表格所有的边框
    ======================================================== */
-[data-testid="stMarkdownContainer"] table,
-[data-testid="stMarkdownContainer"] thead,
-[data-testid="stMarkdownContainer"] tbody,
-[data-testid="stMarkdownContainer"] tfoot,
-[data-testid="stMarkdownContainer"] tr,
-[data-testid="stMarkdownContainer"] th,
-[data-testid="stMarkdownContainer"] td {{
+table {{
+    border: none !important; 
+    border-collapse: collapse !important;
+    background-color: transparent !important;
+}}
+thead, tbody, tfoot, tr, th, td {{
     border: none !important;
     border-color: transparent !important;
     background-color: transparent !important;
 }}
-[data-testid="stMarkdownContainer"] th {{
+th {{
     background-color: rgba(255, 255, 255, 0.1) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
     color: #f8fafc !important;
 }}
-[data-testid="stMarkdownContainer"] td {{
+td {{
     border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
     color: #e2e8f0 !important;
 }}
@@ -238,20 +237,70 @@ for _k, _v in _DEFAULTS.items():
         st.session_state[_k] = _v
 
 
-# ==================== 5. 组件渲染函数 ====================
+# ==================== 5. 核心渲染函数 ====================
+def render_custom_markdown(text):
+    """将文本中的 Markdown 表格抽离并转为无边框的纯 HTML 表格"""
+    lines = text.split('\n')
+    table_lines = []
+    text_lines = []
+
+    def _is_md_separator(line):
+        cells = [c.strip() for c in line.strip().strip('|').split('|')]
+        non_empty = [c for c in cells if c]
+        return bool(non_empty) and all(re.fullmatch(r':?-{3,}:?', c) for c in non_empty)
+
+    def flush_table():
+        if table_lines:
+            t_text = "\n".join(table_lines)
+            try:
+                valid_rows = [l for l in table_lines if not _is_md_separator(l)]
+                if len(valid_rows) > 0:
+                    header = [h.strip() for h in valid_rows[0].strip('|').split('|')]
+                    data = []
+                    for l in valid_rows[1:]:
+                        row = [c.strip() for c in l.strip('|').split('|')]
+                        if len(row) == len(header):
+                            data.append(row)
+                        elif len(row) > len(header):
+                            merged = row[: len(header) - 1] + [" | ".join(row[len(header) - 1:])]
+                            data.append(merged)
+
+                    if data:
+                        df = pd.DataFrame(data, columns=header)
+                        # 强制内联 style="border: none;" 并且加 !important 的逻辑
+                        html_table = df.to_html(index=False, classes='custom-table', escape=True, border=0)
+                        # 极其暴力的替换，确保任何可能的 border 都被干掉
+                        html_table = re.sub(r'<table[^>]*>',
+                                            '<table class="custom-table" style="border:none !important; border-collapse:collapse !important; background:transparent !important;">',
+                                            html_table, count=1)
+                        st.markdown(
+                            f'<div style="width:100%; overflow-x:auto; border:none !important; background:transparent !important;">{html_table}</div>',
+                            unsafe_allow_html=True)
+                    else:
+                        st.markdown(t_text)
+            except Exception:
+                st.markdown(t_text)
+            table_lines.clear()
+
+    for line in lines:
+        if line.strip().startswith('|'):
+            table_lines.append(line)
+        else:
+            flush_table()
+            if line.strip():
+                text_lines.append(line)
+                st.markdown(line)
+    flush_table()
+
+
 def render_storyboard(last_script):
     st.markdown("### 完美换行分镜表")
     st.caption("🤝 **人机协作**：AI 生成初稿 → 展开下方抽屉 **双击单元格** 即可修改 → 导出执行清单")
     try:
-        def _is_md_separator(line):
-            cells = [c.strip() for c in line.strip().strip('|').split('|')]
-            non_empty = [c for c in cells if c]
-            return bool(non_empty) and all(re.fullmatch(r':?-{3,}:?', c) for c in non_empty)
-
         table_text = ""
         for line in last_script.split('\n'):
             s = line.strip()
-            if s.startswith('|') and not _is_md_separator(s):
+            if s.startswith('|') and not re.fullmatch(r'\|[\s\-\|:]+\|', s):
                 table_text += line + "\n"
 
         if table_text:
@@ -282,11 +331,11 @@ def render_storyboard(last_script):
 
             html_table = df.to_html(index=False, classes='custom-table', escape=True, justify='left', border=0)
             html_table = re.sub(r'<table[^>]*>',
-                                f'<table class="custom-table" style="border:none; border-collapse:collapse;">{colgroup_html}',
+                                f'<table class="custom-table" style="border:none !important; border-collapse:collapse !important; background:transparent !important;">{colgroup_html}',
                                 html_table, count=1)
 
             st.markdown(
-                f'<div class="custom-table-container" style="border:none; background:transparent;">{html_table}</div>',
+                f'<div style="width:100%; overflow-x:auto; border:none !important; background:transparent !important;">{html_table}</div>',
                 unsafe_allow_html=True)
 
             with st.expander("✏️ 展开以双击修改分镜表 & 导出"):
@@ -693,8 +742,10 @@ else:
                     st.markdown(f"**判定结论**：{verdict.group(1).strip()}")
 
                 clean_analysis = re.sub(r'【判定结论】[\s\S]*?(?=\n【|$)', '', analysis_text, count=1)
+
                 with st.container(border=True):
-                    st.markdown(clean_analysis)
+                    # 用自定义渲染器处理剩下的文本
+                    render_custom_markdown(clean_analysis)
 
             with col_right:
                 st.markdown("#### ✅ AI 安全改写版")
