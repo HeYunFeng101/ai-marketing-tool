@@ -42,6 +42,8 @@ st.markdown(f"""
     border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
 }}
 .stMarkdown, p, h1, h2, h3, h4, label, span {{ color: #f8fafc !important; }}
+
+/* 修复 Toast */
 div[data-testid="stToast"], [data-baseweb="toast"] {{
     background-color: #262730 !important; border: 1px solid rgba(255,255,255,0.2) !important;
 }}
@@ -64,6 +66,8 @@ div[data-testid="stToast"] *, [data-baseweb="toast"] * {{ color: white !importan
     padding: 10px 20px !important; border-radius: 30px !important; border: 1px solid rgba(255, 255, 255, 0.2) !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255,255,255,0.4) !important; margin-bottom: 15px !important;
 }}
+
+/* 修复输入框 */
 [data-testid="stWidgetLabel"] p {{
     display: inline-block; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);
     padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15);
@@ -81,6 +85,18 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
     border: 1px solid rgba(139, 92, 246, 0.8) !important; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3) !important;
     background-color: rgba(50, 55, 75, 0.8) !important;
 }}
+
+/* 🌟 修复下拉框和单选框 */
+div[data-baseweb="select"] > div {{
+    background-color: rgba(40, 45, 60, 0.7) !important; color: white !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+}}
+div[data-baseweb="select"] div {{ color: white !important; }}
+ul[data-baseweb="menu"] {{ background-color: #262730 !important; }}
+ul[data-baseweb="menu"] li {{ color: white !important; }}
+div[data-testid="stRadio"] label {{ color: white !important; }}
+
+/* 修复按钮 */
 .stButton > button, .stFormSubmitButton > button, .stDownloadButton > button {{
     background: rgba(255, 255, 255, 0.08) !important; backdrop-filter: blur(12px) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important; border-radius: 50px !important; 
@@ -93,6 +109,8 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
     border-color: rgba(255, 255, 255, 0.5) !important;
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2), inset 0 2px 5px rgba(255,255,255,0.8) !important;
 }}
+
+/* Tabs 胶囊导航 */
 .stTabs [data-baseweb="tab-list"] {{ gap: 15px; background-color: transparent; border-bottom: none; }}
 .stTabs [data-baseweb="tab"] {{
     border-radius: 50px !important; background-color: rgba(255, 255, 255, 0.05) !important;
@@ -107,6 +125,8 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255,255,255,0.6) !important;
 }}
+
+/* 容器卡片 */
 [data-testid="stVerticalBlockBorderWrapper"] {{
     background: rgba(255, 255, 255, 0.05) !important; backdrop-filter: blur(20px) saturate(150%) !important;
     border-radius: 24px !important; border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -118,18 +138,24 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255,255,255,0.5) !important;
     background: rgba(255, 255, 255, 0.08) !important;
 }}
-.stCodeBlock pre, .stCodeBlock code {{
-    white-space: pre-wrap !important; word-wrap: break-word !important; word-break: normal !important;
+
+/* 🌟 暴力修复云端代码块，强制定制背景色 */
+div[data-testid="stCodeBlock"], div[data-testid="stCodeBlock"] > div, div[data-testid="stCodeBlock"] pre {{
+    background-color: #1a1c24 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}}
+div[data-testid="stCodeBlock"] *, div[data-testid="stCodeBlock"] code {{
+    color: #e2e8f0 !important;
 }}
 
-/* 彻底修复云端表格白线突兀问题 */
+/* 修复表格白线 */
 .custom-table-container {{
     width: 100%; overflow-x: auto; border-radius: 16px;
     border: 1px solid rgba(255,255,255,0.15); background: rgba(255, 255, 255, 0.03);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }}
 .custom-table {{
-    width: 100%; table-layout: fixed; border-collapse: collapse !important; /* 消除双线 */
+    width: 100%; table-layout: fixed; border-collapse: collapse !important;
     word-wrap: break-word; white-space: normal; border: none !important;
 }}
 .custom-table th {{
@@ -139,8 +165,8 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
 }}
 .custom-table td {{
     padding: 12px 10px; 
-    border: none !important; /* 暴力清除所有单元格边框 */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; /* 只留微弱的底边 */
+    border: none !important; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; 
     color: #e2e8f0; line-height: 1.6; word-wrap: break-word; white-space: normal;
 }}
 .custom-table tr:last-child td {{ border-bottom: none !important; }}
@@ -159,18 +185,6 @@ input::placeholder, textarea::placeholder {{ color: rgba(255, 255, 255, 0.4) !im
   .bubble-subtitle {{ font-size: 0.9rem !important; }}
   .stTabs [data-baseweb="tab"] {{ padding: 8px 14px !important; font-size: 0.85rem !important; }}
 }}
-
-/* 强制修复云端白底白字问题 */
-[data-testid="stAlert"] {{
-    background-color: rgba(30, 41, 59, 0.8) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}}
-[data-testid="stAlert"] * {{ color: #f8fafc !important; }}
-[data-testid="stCodeBlock"] pre {{
-    background-color: #1e2030 !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-}}
-[data-testid="stCodeBlock"] code {{ color: #a78bfa !important; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -258,7 +272,6 @@ def render_storyboard(last_script):
                 f'<col style="width:{w}%">' for w in _W[:len(header)]) + '</colgroup>') if len(header) <= len(
                 _W) else ''
 
-            # 从源头禁用 border=1
             html_table = df.to_html(index=False, classes='custom-table', escape=True, justify='left', border=0)
             html_table = re.sub(r'<table[^>]*>', f'<table class="custom-table">{colgroup_html}', html_table, count=1)
 
@@ -612,7 +625,10 @@ else:
             with col_left:
                 st.markdown("#### ❌ 原稿 (包含风险)")
                 if st.session_state.get("rule_hits"):
-                    st.error(f"⚠️ **本地规则引擎拦截**：发现高危极限词")
+                    # 🌟 换用纯 HTML 写死警告框
+                    st.markdown(
+                        '<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">⚠️ 本地规则引擎拦截：发现高危极限词</div>',
+                        unsafe_allow_html=True)
                     raw_text = st.session_state.get("review_input", "")
                     display_text = html.escape(raw_text)
                     for word in st.session_state["rule_hits"]:
@@ -635,8 +651,15 @@ else:
 
             with col_right:
                 st.markdown("#### ✅ AI 安全改写版")
-                st.success("建议使用以下话术，规避封号风险：")
-                st.code(safe_version, language="text")
+                # 🌟 换用纯 HTML 写死成功框
+                st.markdown(
+                    '<div style="background-color: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); padding: 15px; border-radius: 12px; color: #6ee7b7; margin-bottom: 15px; font-weight: bold;">建议使用以下话术，规避封号风险：</div>',
+                    unsafe_allow_html=True)
+
+                # 🌟 用纯 HTML 深色框替代 st.code
+                st.markdown(
+                    f'<div style="background-color: #1a1c24; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; color: #e2e8f0; font-family: monospace; white-space: pre-wrap; margin-bottom: 15px;">{html.escape(safe_version)}</div>',
+                    unsafe_allow_html=True)
 
                 ts = datetime.now().strftime("%Y%m%d_%H%M")
                 st.download_button(label="📥 下载完整合规报告 (TXT)", data=st.session_state["review_result"],
