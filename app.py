@@ -139,6 +139,21 @@ div[data-testid="stRadio"] label {{ color: white !important; }}
     background: rgba(255, 255, 255, 0.08) !important;
 }}
 
+/* 🌟 暴力修复 st.status 在云端变白的问题 */
+[data-testid="stStatusWidget"] {{
+    background-color: rgba(30, 33, 48, 0.9) !important; /* 深色磨砂背景 */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+}}
+[data-testid="stStatusWidget"] > div,
+[data-testid="stStatusWidget"] details,
+[data-testid="stStatusWidget"] summary,
+[data-testid="stStatusWidget"] p,
+[data-testid="stStatusWidget"] span {{
+    background-color: transparent !important;
+    color: #f8fafc !important;
+}}
+
 /* 🌟 暴力修复云端代码块，强制定制背景色 */
 div[data-testid="stCodeBlock"], div[data-testid="stCodeBlock"] > div, div[data-testid="stCodeBlock"] pre {{
     background-color: #1a1c24 !important;
@@ -625,7 +640,6 @@ else:
             with col_left:
                 st.markdown("#### ❌ 原稿 (包含风险)")
                 if st.session_state.get("rule_hits"):
-                    # 🌟 换用纯 HTML 写死警告框
                     st.markdown(
                         '<div style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 15px; border-radius: 12px; color: #fca5a5; margin-bottom: 15px; font-weight: bold;">⚠️ 本地规则引擎拦截：发现高危极限词</div>',
                         unsafe_allow_html=True)
@@ -651,12 +665,9 @@ else:
 
             with col_right:
                 st.markdown("#### ✅ AI 安全改写版")
-                # 🌟 换用纯 HTML 写死成功框
                 st.markdown(
                     '<div style="background-color: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); padding: 15px; border-radius: 12px; color: #6ee7b7; margin-bottom: 15px; font-weight: bold;">建议使用以下话术，规避封号风险：</div>',
                     unsafe_allow_html=True)
-
-                # 🌟 用纯 HTML 深色框替代 st.code
                 st.markdown(
                     f'<div style="background-color: #1a1c24; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; color: #e2e8f0; font-family: monospace; white-space: pre-wrap; margin-bottom: 15px;">{html.escape(safe_version)}</div>',
                     unsafe_allow_html=True)
